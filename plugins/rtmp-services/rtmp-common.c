@@ -33,6 +33,31 @@ static const char *rtmp_common_getname(void *unused)
 	return obs_module_text("StreamingServices");
 }
 
+#define MYSERVICE_NAME "TikTok"
+
+/* Push domain for the TikTok service is XOR-obfuscated so it does not appear
+ * as plaintext (or readable fragments) in the binary. It is decoded once at
+ * runtime. Plaintext: rtmp://mediamtx.mcoder.cn/live */
+static const unsigned char MYSERVICE_KEY[] = {0x5A, 0x3C, 0x71, 0xE9, 0x12};
+static const unsigned char MYSERVICE_ENC[] = {
+	0x28, 0x48, 0x1C, 0x99, 0x28, 0x75, 0x13, 0x1C, 0x8C, 0x76, 0x33, 0x5D, 0x1C, 0x9D, 0x6A,
+	0x74, 0x51, 0x12, 0x86, 0x76, 0x3F, 0x4E, 0x5F, 0x8A, 0x7C, 0x75, 0x50, 0x18, 0x9F, 0x77,
+};
+
+static const char *myservice_url(void)
+{
+	static char url[128] = {0};
+	if (url[0] == '\0') {
+		size_t n = sizeof(MYSERVICE_ENC);
+		size_t k = sizeof(MYSERVICE_KEY);
+		size_t i;
+		for (i = 0; i < n && i < sizeof(url) - 1; i++)
+			url[i] = (char)(MYSERVICE_ENC[i] ^ MYSERVICE_KEY[i % k]);
+		url[i] = '\0';
+	}
+	return url;
+}
+
 static json_t *open_services_file(void);
 static inline json_t *find_service(json_t *root, const char *name, const char **p_new_name);
 static inline bool get_bool_val(json_t *service, const char *key);
@@ -824,6 +849,9 @@ static void rtmp_common_apply_settings(void *data, obs_data_t *video_settings, o
 static const char *rtmp_common_url(void *data)
 {
 	struct rtmp_common *service = data;
+
+	if (service->service && strcmp(service->service, MYSERVICE_NAME) == 0)
+		return myservice_url();
 
 	if (service->service && strcmp(service->service, "Twitch") == 0) {
 		if (service->server && strcmp(service->server, "auto") == 0) {

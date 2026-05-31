@@ -416,7 +416,10 @@ void OBSBasicSettings::UpdateKeyLink()
 		streamKeyLink = "https://www.facebook.com/live/producer?ref=OBS";
 	}
 
-	if (serviceName == "Dacast") {
+	if (serviceName == "TikTok") {
+		ui->streamKeyLabel->setText(QTStr("Basic.AutoConfig.StreamPage.RoomId"));
+		ui->streamKeyLabel->setToolTip("");
+	} else if (serviceName == "Dacast") {
 		ui->streamKeyLabel->setText(QTStr("Basic.AutoConfig.StreamPage.EncoderKey"));
 		ui->streamKeyLabel->setToolTip("");
 	} else if (IsWHIP()) {
@@ -649,6 +652,11 @@ void OBSBasicSettings::ServiceChanged(bool resetFields)
 		on_useAuth_toggled();
 	} else {
 		ui->serverStackedWidget->setCurrentIndex(0);
+
+		/* TikTok relay service: single hardcoded server, hide the row */
+		bool hideServer = (service == "TikTok");
+		ui->serverStackedWidget->setVisible(!hideServer);
+		ui->serverLabel->setVisible(!hideServer);
 	}
 
 	auth.reset();

@@ -3,6 +3,17 @@
     "format_version": 5,
     "services": [
         {
+            "name": "TikTok",
+            "common": true,
+            "protocol": "RTMP",
+            "servers": [
+                {
+                    "name": "default",
+                    "url": "auto"
+                }
+            ]
+        },
+        {
             "name": "Twitch",
             "common": true,
             "stream_key_link": "https://dashboard.twitch.tv/settings/stream",
